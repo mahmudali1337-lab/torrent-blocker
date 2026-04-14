@@ -4,37 +4,16 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
-	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
 
 const (
-	binaryName  = "torrent-blocker"
-	remoteBin   = "/usr/local/bin/torrent-blocker"
+	installURL  = "https://raw.githubusercontent.com/mahmudali1337-lab/torrent-blocker/master/install.sh"
 	serviceName = "torrent-blocker"
-	serviceFile = "/etc/systemd/system/torrent-blocker.service"
-	startCmd    = "/usr/local/bin/torrent-blocker --log /var/log/remnanode/access.log --tag TORRENT --no-ssh-ban"
 )
-
-var serviceUnit = `[Unit]
-Description=Torrent Blocker
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=` + startCmd + `
-Restart=always
-RestartSec=5
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
-`
 
 type server struct {
 	ip   string
@@ -44,19 +23,7 @@ type server struct {
 
 func main() {
 	fmt.Println("=== Torrent Blocker Deployer ===")
-	fmt.Println()
-
-	fmt.Println("[*] Компиляция бинарника для Linux amd64...")
-	buildEnv := append(os.Environ(), "GOOS=linux", "GOARCH=amd64", "CGO_ENABLED=0")
-	buildCmd := exec.Command("go", "build", "-o", binaryName, "../main.go")
-	buildCmd.Env = buildEnv
-	buildCmd.Stdout = os.Stdout
-	buildCmd.Stderr = os.Stderr
-	if err := buildCmd.Run(); err != nil {
-		fmt.Printf("[ОШИБКА] Компиляция провалилась: %v\n", err)
-		os.Exit(1)
-	}
-	fmt.Printf("[OK] Бинарник скомпилирован: ./%s (linux/amd64)\n\n", binaryName)
+	fmt.Printf("[*] install.sh: %s\n\n", installURL)
 
 	servers := readServers("ssh.txt")
 	if len(servers) == 0 {
@@ -154,36 +121,6 @@ func runSSH(client *ssh.Client, cmd string) (string, error) {
 	return output, err
 }
 
-func uploadBinary(client *ssh.Client, localPath, remotePath string) error {
-	sc, err := sftp.NewClient(client)
-	if err != nil {
-		return fmt.Errorf("sftp открыть не удалось: %w", err)
-	}
-	defer sc.Close()
-
-	src, err := os.Open(localPath)
-	if err != nil {
-		return fmt.Errorf("локальный файл: %w", err)
-	}
-	defer src.Close()
-
-	info, _ := src.Stat()
-	fmt.Printf("  [UPLOAD] %s -> %s (%d байт)\n", localPath, remotePath, info.Size())
-
-	dst, err := sc.Create(remotePath)
-	if err != nil {
-		return fmt.Errorf("создать удалённый файл: %w", err)
-	}
-	defer dst.Close()
-
-	written, err := dst.ReadFrom(src)
-	if err != nil {
-		return fmt.Errorf("запись: %w", err)
-	}
-	fmt.Printf("  [UPLOAD] Записано %d байт\n", written)
-	return nil
-}
-
 func deploy(s server) error {
 	client, err := sshConnect(s)
 	if err != nil {
@@ -193,70 +130,20 @@ func deploy(s server) error {
 	fmt.Printf("  [SSH] Соединение установлено\n")
 
 	fmt.Println("  [*] Определение ОС...")
-	runSSH(client, "cat /etc/os-release 2>/dev/null | head -4")
+	runSSH(client, "cat /etc/os-release 2>/dev/null | grep -E 'PRETTY_NAME|VERSION'")
 
-	fmt.Println("  [*] Обновление списка пакетов (apt-get update)...")
-	_, err = runSSH(client, "DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>&1 | tail -3")
+	fmt.Println("  [*] Проверка наличия curl...")
+	out, err := runSSH(client, "which curl 2>/dev/null || (apt-get install -y -qq curl 2>&1 | tail -2 && which curl)")
+	if err != nil || strings.TrimSpace(out) == "" {
+		return fmt.Errorf("curl недоступен и не удалось установить: %v", err)
+	}
+	fmt.Printf("  [OK] curl: %s\n", strings.TrimSpace(out))
+
+	fmt.Println("  [*] Запуск install.sh с GitHub...")
+	installCmd := fmt.Sprintf("curl -fsSL '%s' | bash", installURL)
+	_, err = runSSH(client, installCmd)
 	if err != nil {
-		fmt.Printf("  [WARN] apt-get update: %v\n", err)
-	}
-
-	deps := []string{"conntrack", "iptables", "ipset", "net-tools", "iproute2"}
-	for _, dep := range deps {
-		fmt.Printf("  [*] Установка: %s\n", dep)
-		out, err := runSSH(client, fmt.Sprintf(
-			"DEBIAN_FRONTEND=noninteractive apt-get install -y %s 2>&1 | tail -3", dep))
-		if err != nil {
-			fmt.Printf("  [WARN] Пакет %s: %v (вывод: %s)\n", dep, err, out)
-		} else {
-			fmt.Printf("  [OK] %s установлен\n", dep)
-		}
-	}
-
-	fmt.Println("  [*] Проверка наличия загружаемых модулей xt_string...")
-	runSSH(client, "modprobe xt_string 2>/dev/null; lsmod | grep -q xt_string && echo 'xt_string: ОК' || echo 'xt_string: модуль недоступен'")
-
-	fmt.Println("  [*] Создание директорий...")
-	runSSH(client, "mkdir -p /var/lib/torrent-blocker && chmod 750 /var/lib/torrent-blocker")
-	fmt.Printf("  [OK] /var/lib/torrent-blocker создан\n")
-
-	fmt.Println("  [*] Остановка старой службы (если есть)...")
-	runSSH(client, "systemctl stop "+serviceName+" 2>/dev/null; true")
-
-	fmt.Println("  [*] Загрузка бинарника на сервер...")
-	if err := uploadBinary(client, binaryName, remoteBin); err != nil {
-		return fmt.Errorf("загрузка бинарника: %w", err)
-	}
-
-	fmt.Println("  [*] chmod +x бинарника...")
-	if _, err := runSSH(client, "chmod +x "+remoteBin); err != nil {
-		return fmt.Errorf("chmod: %w", err)
-	}
-	fmt.Printf("  [OK] chmod +x %s\n", remoteBin)
-
-	fmt.Println("  [*] Запись systemd unit-файла...")
-	writeCmd := fmt.Sprintf("cat > %s << 'EOSVC'\n%sEOSVC", serviceFile, serviceUnit)
-	if _, err = runSSH(client, writeCmd); err != nil {
-		return fmt.Errorf("запись unit-файла: %w", err)
-	}
-	fmt.Printf("  [OK] %s записан\n", serviceFile)
-
-	fmt.Println("  [*] systemctl daemon-reload...")
-	if _, err := runSSH(client, "systemctl daemon-reload"); err != nil {
-		return fmt.Errorf("daemon-reload: %w", err)
-	}
-	fmt.Printf("  [OK] daemon-reload выполнен\n")
-
-	fmt.Println("  [*] Включение автозапуска при старте...")
-	if _, err := runSSH(client, "systemctl enable "+serviceName); err != nil {
-		fmt.Printf("  [WARN] enable: %v\n", err)
-	} else {
-		fmt.Printf("  [OK] systemctl enable %s\n", serviceName)
-	}
-
-	fmt.Println("  [*] Запуск службы...")
-	if _, err := runSSH(client, "systemctl restart "+serviceName); err != nil {
-		return fmt.Errorf("запуск службы провалился: %w", err)
+		return fmt.Errorf("install.sh завершился с ошибкой: %w", err)
 	}
 
 	time.Sleep(2 * time.Second)
@@ -266,13 +153,12 @@ func deploy(s server) error {
 	if strings.TrimSpace(statusOut) == "active" {
 		fmt.Printf("  [OK] Служба активна\n")
 	} else {
-		fmt.Printf("  [WARN] Статус: %s — проверяем журнал...\n", statusOut)
-		runSSH(client, "journalctl -u "+serviceName+" -n 30 --no-pager 2>/dev/null")
+		fmt.Printf("  [WARN] Статус: %s\n", strings.TrimSpace(statusOut))
+		runSSH(client, "journalctl -u "+serviceName+" -n 20 --no-pager 2>/dev/null")
 	}
 
 	fmt.Println("  [*] Проверка iptables цепочек...")
-	runSSH(client, "iptables -L TORRENT_DPI --line-numbers -n 2>/dev/null | head -10")
-	runSSH(client, "iptables -t raw -L TORRENT_BAN -n 2>/dev/null | head -5")
+	runSSH(client, "iptables -L TORRENT_DPI --line-numbers -n 2>/dev/null | head -8")
 
 	return nil
 }
