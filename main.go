@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	banDuration   = 60 * time.Minute
+	banDuration   = 10 * time.Minute
 	peerBanDur    = 24 * time.Hour
 	logFile       = ""
 	torrentTag    = "TORRENT"
@@ -152,6 +152,14 @@ var torrentDestDomains = []string{
 var torrentDestKeywords = []string{
 	"tracker", "torrent", "rutracker", "rutor",
 	"piratebay", "1337x", "nyaa", "opentrackr", "announce",
+}
+
+var bypassDomains = []string{
+	"vk.com", "vk.ru", "vk.me",
+	"vk-analytics.ru",
+	"userapi.com",
+	"vkuseraudio.net", "vkuseraudio.com",
+	"vkvideo.ru",
 }
 
 func iptcmd(ip string) string {
@@ -457,6 +465,11 @@ func isDomainTorrent(dest string) bool {
 		host = dest
 	}
 	host = strings.ToLower(host)
+	for _, d := range bypassDomains {
+		if host == d || strings.HasSuffix(host, "."+d) {
+			return false
+		}
+	}
 	for _, d := range torrentDestDomains {
 		if host == d || strings.HasSuffix(host, "."+d) {
 			return true
