@@ -36,6 +36,8 @@ var (
 	enableSSHBan  = true
 	sshBanThresh  = 5
 	finWaitThresh = 8
+	connThresh    = 50
+	sendQThresh   = 10
 )
 
 var (
@@ -638,7 +640,7 @@ func analyzeConnections(entries []connEntry) {
 	}
 
 	for ip, cnt := range multiConnCount {
-		if cnt >= 10 && largeSendQ[ip] >= 3 {
+		if cnt >= connThresh && largeSendQ[ip] >= sendQThresh {
 			banIP(ip, fmt.Sprintf("multi_conn_large_sendq(conns=%d,sendq=%d)", cnt, largeSendQ[ip]))
 		}
 	}
@@ -898,6 +900,20 @@ func main() {
 				}
 				i++
 			}
+		case "--conn-thresh":
+			if i+1 < len(os.Args) {
+				if n, err := strconv.Atoi(os.Args[i+1]); err == nil {
+					connThresh = n
+				}
+				i++
+			}
+		case "--sendq-thresh":
+			if i+1 < len(os.Args) {
+				if n, err := strconv.Atoi(os.Args[i+1]); err == nil {
+					sendQThresh = n
+				}
+				i++
+			}
 		case "ban":
 			if i+1 < len(os.Args) {
 				ip := os.Args[i+1]
@@ -946,8 +962,8 @@ func main() {
 	if logFile != "" {
 		fmt.Printf("monitoring log: %s (tag=%s)\n", logFile, torrentTag)
 	}
-	fmt.Printf("netstat=%v ssh_ban=%v(thresh=%d) finwait_thresh=%d\n",
-		enableNetstat, enableSSHBan, sshBanThresh, finWaitThresh)
+	fmt.Printf("netstat=%v ssh_ban=%v(thresh=%d) finwait_thresh=%d conn_thresh=%d sendq_thresh=%d\n",
+		enableNetstat, enableSSHBan, sshBanThresh, finWaitThresh, connThresh, sendQThresh)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
