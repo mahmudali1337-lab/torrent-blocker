@@ -160,6 +160,15 @@ var bypassDomains = []string{
 	"userapi.com",
 	"vkuseraudio.net", "vkuseraudio.com",
 	"vkvideo.ru",
+	// my.com analytics / tracker-api
+	"tracker-api.my.com",
+	"my.com",
+	// announcement widget
+	"announcekit.co",
+	// ad network tracker
+	"maticooads.com",
+	// Wildberries status tracker
+	"wildberries.ru",
 }
 
 func iptcmd(ip string) string {
