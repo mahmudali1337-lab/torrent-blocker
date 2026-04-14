@@ -35,7 +35,7 @@ var (
 	enableNetstat = true
 	enableSSHBan  = true
 	sshBanThresh  = 5
-	finWaitThresh = 8
+	finWaitThresh = 30
 	connThresh    = 50
 	sendQThresh   = 10
 )
