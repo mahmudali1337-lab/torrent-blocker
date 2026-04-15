@@ -151,108 +151,51 @@ var torrentDestDomains = []string{
 }
 
 var torrentDestKeywords = []string{
-	"torrent", "bittorrent", "magnet", "magnet:?xt=", "btih", "infohash", "peer", "seeder", "leecher", "swarm",
-	"announce", "announce-list", "tracker", "trackers", "udp://", "http://", "https://", "wss://", "ws://",
-	"dht", "pex", "lsd", "utp", "tcp", "udp", "piece length", "pieces", "peer_id", ".torrent", "magnet link",
-
-	"tracker.opentrackr.org", "tracker.openbittorrent.com", "tracker.coppersurfer.tk", "tracker.leechers-paradise.org",
-	"tracker.internetwarriors.net", "tracker.torrent.eu.org", "tracker.moeking.me", "tracker.bt-hash.com",
-	"tracker.dutchtracking.com", "tracker.justseed.it", "tracker.zer0day.to", "tracker.cyberia.is", "explodie.org",
-	"tracker.bittor.pw", "tracker.qu.ax", "tracker.theoks.net", "tracker.srv00.com", "tracker.wepzone.net",
-	"tracker.files.fm", "tracker.nitrix.me", "tracker.lilithraws.cf", "tracker.tamersunion.org", "tracker.noobsubs.net",
-
-	"udp://wambo.club:1337/announce", "udp://tracker.dutchtracking.com:6969/announce", "udp://tc.animereactor.ru:8082/announce",
-	"udp://tracker.uw0.xyz:6969/announce", "udp://tracker.kamigami.org:2710/announce", "http://tracker.files.fm:6969/announce",
-	"udp://opentracker.i2p.rocks:6969/announce", "udp://tracker.zerobytes.xyz:1337/announce",
-	"https://tracker.nitrix.me:443/announce", "http://novaopcj.icu:10325/announce", "udp://aaa.army:8866/announce",
-	"https://tracker.imgoingto.icu:443/announce", "udp://tracker.shkinev.me:6969/announce", "udp://blokas.io:6969/announce",
-	"udp://api.bitumconference.ru:6969/announce", "udp://ln.mtahost.co:6969/announce", "udp://vibe.community:6969/announce",
-	"udp://tracker.vulnix.sh:6969/announce", "udp://wassermann.online:6969/announce", "udp://kanal-4.de:6969/announce",
-	"udp://mts.tvbit.co:6969/announce", "udp://adminion.n-blade.ru:6969/announce", "udp://benouworldtrip.fr:6969/announce",
-	"udp://sd-161673.dedibox.fr:6969/announce", "udp://47.ip-51-68-199.eu:6969/announce", "udp://cdn-1.gamecoast.org:6969/announce",
-	"udp://daveking.com:6969/announce", "http://rt.tace.ru:80/announce", "udp://forever-tracker.zooki.xyz:6969/announce",
-	"udp://free-tracker.zooki.xyz:6969/announce", "udp://tracker.publictracker.xyz:6969/announce",
-	"udp://tracker.skynetcloud.site:6969/announce", "udp://tracker.altrosky.nl:6969/announce",
-	"http://5rt.tace.ru:60889/announce", "https://tracker.lilithraws.cf:443/announce",
-	"http://tracker.sakurato.xyz:23333/announce", "udp://open.stealth.si:80/announce",
-	"udp://zephir.monocul.us:6969/announce", "http://tracker2.itzmx.com:6961/announce",
-	"http://tracker3.itzmx.com:6961/announce", "http://h4.trakx.nibba.trade:80/announce",
-	"udp://line-net.ru:6969/announce", "udp://tracker.dyne.org:6969/announce",
-	"udp://mail.realliferpg.de:6969/announce", "udp://storage.groupees.com:6969/announce",
-	"udp://torrent.tdjs.tech:6969/announce", "udp://tracker.v6speed.org:6969/announce",
-	"udp://cdn-2.gamecoast.org:6969/announce", "udp://bms-hosxp.com:6969/announce",
-	"udp://teamspeak.value-wolf.org:6969/announce", "udp://koli.services:6969/announce",
-	"udp://inferno.demonoid.is:3391/announce", "udp://ipv4.tracker.harry.lu:80/announce",
-	"udp://tracker.cyberia.is:6969/announce", "udp://tracker.ds.is:6969/announce",
-	"udp://retracker.akado-ural.ru:80/announce", "udp://discord.heihachi.pw:6969/announce",
-	"udp://chanchan.uchuu.co.uk:6969/announce", "udp://aruacfilmes.com.br:6969/announce",
-	"udp://edu.uifr.ru:6969/announce", "udp://publictracker.xyz:6969/announce",
-	"udp://www.torrent.eu.org:451/announce", "http://vps02.net.orel.ru:80/announce",
-	"udp://bt2.archive.org:6969/announce", "http://tracker.noobsubs.net:80/announce",
-	"udp://tracker.zum.bi:6969/announce", "udp://dpiui.reedlan.com:6969/announce",
-	"udp://engplus.ru:6969/announce", "udp://ultra.zt.ua:6969/announce",
-	"udp://nagios.tks.sumy.ua:80/announce", "udp://61626c.net:6969/announce",
-	"udp://t2.leech.ie:1337/announce", "https://trakx.herokuapp.com:443/announce",
-	"udp://bt1.archive.org:6969/announce", "https://tracker.tamersunion.org:443/announce",
-	"udp://t1.leech.ie:1337/announce", "udp://us-tracker.publictracker.xyz:6969/announce",
-	"udp://tracker.tiny-vps.com:6969/announce", "udp://tracker.dler.org:6969/announce",
-	"http://t.nyaatracker.com:80/announce", "udp://t3.leech.ie:1337/announce",
-	"udp://3rt.tace.ru:60889/announce", "udp://retracker.lanta-net.ru:2710/announce",
-	"udp://valakas.rollo.dnsabr.com:2710/announce", "udp://rutorrent.frontline-mod.com:6969/announce",
-	"udp://tracker.torrent.eu.org:451/announce", "udp://opentor.org:2710/announce",
-	"udp://adm.category5.tv:6969/announce", "udp://tracker.army:6969/announce",
-	"udp://tracker2.dler.org:80/announce", "udp://tracker.fortu.io:6969/announce",
-	"http://bt.3kb.xyz:80/announce", "udp://explodie.org:6969/announce",
-	"https://1337.abcvg.info:443/announce", "udp://tracker0.ufibox.com:6969/announce",
-	"udp://movies.zsw.ca:6969/announce", "udp://code2chicken.nl:6969/announce",
-	"udp://u.wwwww.wtf:1/announce", "udp://tracker.0x.tf:6969/announce",
-	"http://publictracker.ch:6969/announce", "udp://bioquantum.co.za:6969/announce",
-	"udp://www.midea123.z-media.com.cn:6969/announce", "http://retracker.sevstar.net:2710/announce",
-	"udp://tracker.blacksparrowmedia.net:6969/announce", "udp://git.vulnix.sh:6969/announce",
-	"udp://admin.videoenpoche.info:6969/announce",
-
-	"rutracker", "rutor", "nnmclub", "tapochek", "kinozal", "fast-torrent",
-	"thepiratebay", "piratebay", "tpb", "1337x", "nyaa", "yts", "yify",
-	"limetorrents", "torrentgalaxy", "kickass", "kat", "eztv", "zooqle", "torlock",
-	"skytorrents", "torrentz", "rarbg", "yggtorrent", "demonoid", "btdigg",
-
-	"qbittorrent", "utorrent", "transmission", "deluge", "aria2", "vuze", "libtorrent",
-	"peer_id", "bt_protocol", "bencode", "info_hash", "announce url", "tracker url",
-
-	"openbittorrent", "opentracker", "publictracker", "retracker", "seeders", "leechers",
-	"scrape", "multi-tracker", "trackerlist", "trackerslist", "newtrackon", "dht node",
-
-	"udp://", "http://", "https://", "announce?", "scrape?", "/announce", "/scrape",
-	"tracker1", "tracker2", "tracker3", "tracker4", "tracker5", "tracker6", "tracker7",
-	"tracker8", "tracker9", "tracker10", "seed", "peer", "torrentfile", "magnet:?xt=urn:btih:",
-
-	"bt1.archive.org", "bt2.archive.org", "open.stealth.si", "opentrackr", "coppersurfer",
-	"internetwarriors", "leechers-paradise", "torrent.eu.org", "cyberia.is", "explodie",
-	"dler.org", "nyaatracker", "publictracker", "tiny-vps", "fortu.io", "0x.tf", "ufibox",
-
-	"tracker1.example.com", "tracker2.example.com", "tracker3.example.com", "tracker4.example.com",
-	"tracker5.example.com", "tracker6.example.com", "tracker7.example.com", "tracker8.example.com",
-	"tracker9.example.com", "tracker10.example.com",
-
-	"magnet:?xt=urn:btih:", "magnet:?dn=", "magnet:?tr=", "&tr=", "&dn=", "&xl=",
-	"peerlist", "bitfield", "have", "request", "piece", "cancel", "port", "handshake",
+	// Torrent site names — safe as domain substrings
+	"torrent", "bittorrent", "rutracker", "rutor", "piratebay", "thepiratebay",
+	"opentrackr", "1337x", "nyaa", "rarbg", "demonoid", "yggtorrent",
+	"limetorrents", "torrentgalaxy", "eztv", "zooqle", "torlock",
+	"skytorrents", "torrentz", "btdigg", "nnmclub", "tapochek", "kinozal",
+	"fast-torrent", "qbittorrent", "utorrent", "webtorrent",
+	// Tracker-specific keywords safe in domain context
+	"announce", "opentracker", "publictracker", "retracker",
+	"btih", "infohash",
 }
 
 var bypassDomains = []string{
+	// VK
 	"vk.com", "vk.ru", "vk.me",
 	"vk-analytics.ru",
 	"userapi.com",
 	"vkuseraudio.net", "vkuseraudio.com",
 	"vkvideo.ru",
-	// my.com analytics / tracker-api
+	// my.com analytics
 	"tracker-api.my.com",
 	"my.com",
 	// announcement widget
 	"announcekit.co",
 	// ad network tracker
 	"maticooads.com",
-	// Wildberries status tracker
+	// Wildberries
 	"wildberries.ru",
+	// Google
+	"googleapis.com", "google.com", "googleusercontent.com", "gstatic.com",
+	"firebase.google.com", "crashlytics.com",
+	// Yandex
+	"yandex.ru", "yandex.net", "yandex.com",
+	"appmetrica.yandex.net", "appmetrica.yandex.com",
+	"yango.com",
+	// Facebook / Meta
+	"facebook.com", "fb.com", "instagram.com", "fbcdn.net",
+	// Tencent / QQ
+	"qq.com", "tencent.com", "weixin.qq.com",
+	// Huawei cloud
+	"dbankcloud.ru", "dbankcloud.com", "hicloud.com",
+	// Game analytics / crash reporters
+	"honkaiimpact3.com", "mihoyo.com", "hoyoverse.com",
+	"appsflyer.com", "adjust.com", "amplitude.com",
+	// Other legit analytics/messaging
+	"ekatox.com", "ekatox-ru.com",
 }
 
 func iptcmd(ip string) string {
