@@ -152,7 +152,7 @@ var torrentDestDomains = []string{
 
 var torrentDestKeywords = []string{
 	// Torrent site names — safe as domain substrings
-	"torrent", "bittorrent", "rutracker", "rutor", "piratebay", "thepiratebay",
+	"torrent", "bittorrent", "magnet", "rutracker", "rutor", "piratebay", "thepiratebay",
 	"opentrackr", "1337x", "nyaa", "rarbg", "demonoid", "yggtorrent",
 	"limetorrents", "torrentgalaxy", "eztv", "zooqle", "torlock",
 	"skytorrents", "torrentz", "btdigg", "nnmclub", "tapochek", "kinozal",
@@ -160,6 +160,18 @@ var torrentDestKeywords = []string{
 	// Tracker-specific keywords safe in domain context
 	"announce", "opentracker", "publictracker", "retracker",
 	"btih", "infohash",
+	// Known tracker domains (substring match catches subdomains too)
+	"openbittorrent.com", "opentrackr.org", "coppersurfer.tk", "leechers-paradise.org",
+	"internetwarriors.net", "torrent.eu.org", "moeking.me", "bt-hash.com",
+	"dutchtracking.com", "justseed.it", "zer0day.to", "cyberia.is", "explodie.org",
+	"bittor.pw", "theoks.net", "wepzone.net", "files.fm", "lilithraws.cf",
+	"tamersunion.org", "noobsubs.net", "nitrix.me", "qu.ax",
+	"btdigg.org", "bt4g.com", "torrentz2.eu", "kickasstorrents",
+	"archive.org/download", "i2p.rocks", "zerobytes.xyz",
+	"vulnix.sh", "publictracker.xyz", "skynetcloud.site", "altrosky.nl",
+	"dpiui.reedlan.com", "zum.bi", "dler.org", "nyaatracker.com",
+	"trakx.nibba.trade", "itzmx.com", "sakurato.xyz", "leech.ie",
+	"animereactor.ru", "kamigami.org", "shkinev.me",
 }
 
 var bypassDomains = []string{
