@@ -523,14 +523,6 @@ func isDomainTorrent(dest string) bool {
 			return true
 		}
 	}
-	// Check "tracker" only as an exact domain label to avoid false positives
-	// e.g. "tracker.opentrackr.org" matches, but "tracker-api.my.com" does not
-	
-	for _, label := range strings.Split(host, ".") {
-		if label == "tracker" {
-			return true
-		}
-	}
 
 	for _, kw := range torrentDestKeywords {
 		if strings.Contains(host, kw) {
