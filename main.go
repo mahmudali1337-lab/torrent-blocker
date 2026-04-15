@@ -37,7 +37,7 @@ var (
 	enableFinWait = true
 	sshBanThresh  = 5
 	finWaitThresh = 30
-	connThresh    = 50
+	connThresh    = 300
 	sendQThresh   = 10
 )
 
@@ -193,11 +193,9 @@ var bypassDomains = []string{
 	// Google
 	"googleapis.com", "google.com", "googleusercontent.com", "gstatic.com",
 	"firebase.google.com", "crashlytics.com",
-	// Yandex
 	"yandex.ru", "yandex.net", "yandex.com",
 	"appmetrica.yandex.net", "appmetrica.yandex.com",
 	"yango.com",
-	// Facebook / Meta
 	"facebook.com", "fb.com", "instagram.com", "fbcdn.net",
 	// Tencent / QQ
 	"qq.com", "tencent.com", "weixin.qq.com",
