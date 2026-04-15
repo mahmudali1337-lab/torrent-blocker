@@ -204,8 +204,10 @@ var bypassDomains = []string{
 	// Game analytics / crash reporters
 	"honkaiimpact3.com", "mihoyo.com", "hoyoverse.com",
 	"appsflyer.com", "adjust.com", "amplitude.com",
-	// Other legit analytics/messaging
+	// Other legit analytics/messagingК
 	"ekatox.com", "ekatox-ru.com",
+	// Callback / push notification services
+	"smartcallback.ru",
 }
 
 func iptcmd(ip string) string {
@@ -523,6 +525,7 @@ func isDomainTorrent(dest string) bool {
 	}
 	// Check "tracker" only as an exact domain label to avoid false positives
 	// e.g. "tracker.opentrackr.org" matches, but "tracker-api.my.com" does not
+	
 	for _, label := range strings.Split(host, ".") {
 		if label == "tracker" {
 			return true
