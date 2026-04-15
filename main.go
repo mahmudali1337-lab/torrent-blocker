@@ -34,6 +34,7 @@ var (
 	bypassIPs     = map[string]bool{"127.0.0.1": true, "::1": true}
 	enableNetstat = true
 	enableSSHBan  = true
+	enableFinWait = true
 	sshBanThresh  = 5
 	finWaitThresh = 30
 	connThresh    = 50
@@ -738,6 +739,9 @@ func analyzeConnections(entries []connEntry) {
 	}
 
 	for ip, cnt := range finWaitCount {
+		if !enableFinWait {
+			break
+		}
 		if cnt >= finWaitThresh {
 			finWaitMu.Lock()
 			finWaitHit[ip]++
@@ -999,6 +1003,8 @@ func main() {
 			enableNetstat = false
 		case "--no-ssh-ban":
 			enableSSHBan = false
+		case "--no-finwait-ban":
+			enableFinWait = false
 		case "--ssh-thresh":
 			if i+1 < len(os.Args) {
 				if n, err := strconv.Atoi(os.Args[i+1]); err == nil {
