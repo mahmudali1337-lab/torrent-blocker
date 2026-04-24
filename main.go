@@ -26,6 +26,9 @@ const (
 	storageFile = "/var/lib/torrent-blocker/blocked.json"
 )
 
+var dpiHooks = []string{"OUTPUT", "FORWARD", "INPUT"}
+var banHooks = []string{"PREROUTING", "OUTPUT"}
+
 var (
 	banDuration   = 10 * time.Minute
 	peerBanDur    = 24 * time.Hour
@@ -235,7 +238,7 @@ func ensureDependencies() {
 
 func cleanupDPI() {
 	for _, ipt := range []string{"iptables", "ip6tables"} {
-		for _, chain := range []string{"OUTPUT", "FORWARD"} {
+		for _, chain := range dpiHooks {
 			exec.Command(ipt, "-D", chain, "-j", dpiChain).Run()
 		}
 		for _, chain := range []string{dpiChain, "CATCH_TRACKER", "CATCH_PEER"} {
@@ -244,8 +247,12 @@ func cleanupDPI() {
 		}
 		for _, proto := range []string{"tcp", "udp"} {
 			for _, port := range torrentPorts {
-				for _, chain := range []string{"OUTPUT", "FORWARD"} {
-					exec.Command(ipt, "-D", chain, "-p", proto, "--dport", port, "-j", "DROP").Run()
+				for _, chain := range dpiHooks {
+					dir := "--dport"
+					if chain == "INPUT" {
+						dir = "--sport"
+					}
+					exec.Command(ipt, "-D", chain, "-p", proto, dir, port, "-j", "DROP").Run()
 				}
 			}
 		}
@@ -254,7 +261,9 @@ func cleanupDPI() {
 
 func cleanupBan() {
 	for _, ipt := range []string{"iptables", "ip6tables"} {
-		exec.Command(ipt, "-t", banTable, "-D", banHook, "-j", banChain).Run()
+		for _, hook := range banHooks {
+			exec.Command(ipt, "-t", banTable, "-D", hook, "-j", banChain).Run()
+		}
 		exec.Command(ipt, "-t", banTable, "-F", banChain).Run()
 		exec.Command(ipt, "-t", banTable, "-X", banChain).Run()
 	}
@@ -289,7 +298,9 @@ func cleanup() {
 func initBanChain() {
 	for _, ipt := range []string{"iptables", "ip6tables"} {
 		exec.Command(ipt, "-t", banTable, "-N", banChain).Run()
-		exec.Command(ipt, "-t", banTable, "-I", banHook, "1", "-j", banChain).Run()
+		for _, hook := range banHooks {
+			exec.Command(ipt, "-t", banTable, "-I", hook, "1", "-j", banChain).Run()
+		}
 	}
 }
 
@@ -748,8 +759,12 @@ func applyPortBlock() int {
 	for _, ipt := range []string{"iptables", "ip6tables"} {
 		for _, proto := range []string{"tcp", "udp"} {
 			for _, port := range torrentPorts {
-				for _, chain := range []string{"OUTPUT", "FORWARD"} {
-					if exec.Command(ipt, "-A", chain, "-p", proto, "--dport", port, "-j", "DROP").Run() == nil {
+				for _, chain := range dpiHooks {
+					dir := "--dport"
+					if chain == "INPUT" {
+						dir = "--sport"
+					}
+					if exec.Command(ipt, "-A", chain, "-p", proto, dir, port, "-j", "DROP").Run() == nil {
 						count++
 					}
 				}
@@ -805,7 +820,7 @@ func applyDPI() int {
 			}
 		}
 	}
-	for _, chain := range []string{"OUTPUT", "FORWARD"} {
+	for _, chain := range dpiHooks {
 		for _, ipt := range []string{"iptables", "ip6tables"} {
 			exec.Command(ipt, "-A", chain, "-j", dpiChain).Run()
 		}
