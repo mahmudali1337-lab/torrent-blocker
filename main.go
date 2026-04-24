@@ -1,4 +1,4 @@
-package main
+﻿package main
 
 import (
 	"bufio"
@@ -154,16 +154,13 @@ var torrentDestDomains = []string{
 }
 
 var torrentDestKeywords = []string{
-	// Torrent site names — safe as domain substrings
 	"torrent", "bittorrent", "magnet", "rutracker", "rutor", "piratebay", "thepiratebay",
 	"opentrackr", "1337x", "nyaa", "rarbg", "demonoid", "yggtorrent",
 	"limetorrents", "torrentgalaxy", "eztv", "zooqle", "torlock",
 	"skytorrents", "torrentz", "btdigg", "nnmclub", "tapochek", "kinozal",
 	"fast-torrent", "qbittorrent", "utorrent", "webtorrent",
-	// Tracker-specific keywords safe in domain context
 	"announce", "opentracker", "publictracker", "retracker",
 	"btih", "infohash",
-	// Known tracker domains (substring match catches subdomains too)
 	"openbittorrent.com", "opentrackr.org", "coppersurfer.tk", "leechers-paradise.org",
 	"internetwarriors.net", "torrent.eu.org", "moeking.me", "bt-hash.com",
 	"dutchtracking.com", "justseed.it", "zer0day.to", "cyberia.is", "explodie.org",
@@ -178,38 +175,27 @@ var torrentDestKeywords = []string{
 }
 
 var bypassDomains = []string{
-	// VK
 	"vk.com", "vk.ru", "vk.me",
 	"vk-analytics.ru",
 	"userapi.com",
 	"vkuseraudio.net", "vkuseraudio.com",
 	"vkvideo.ru",
-	// my.com analytics
 	"tracker-api.my.com",
 	"my.com",
-	// announcement widget
 	"announcekit.co",
-	// ad network tracker
 	"maticooads.com",
-	// Wildberries
 	"wildberries.ru",
-	// Google
 	"googleapis.com", "google.com", "googleusercontent.com", "gstatic.com",
 	"firebase.google.com", "crashlytics.com",
 	"yandex.ru", "yandex.net", "yandex.com",
 	"appmetrica.yandex.net", "appmetrica.yandex.com",
 	"yango.com",
 	"facebook.com", "fb.com", "instagram.com", "fbcdn.net",
-	// Tencent / QQ
 	"qq.com", "tencent.com", "weixin.qq.com",
-	// Huawei cloud
 	"dbankcloud.ru", "dbankcloud.com", "hicloud.com",
-	// Game analytics / crash reporters
 	"honkaiimpact3.com", "mihoyo.com", "hoyoverse.com",
 	"appsflyer.com", "adjust.com", "amplitude.com",
-	// Other legit analytics/messagingК
 	"ekatox.com", "ekatox-ru.com",
-	// Callback / push notification services
 	"smartcallback.ru",
 }
 
