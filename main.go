@@ -36,7 +36,7 @@ var (
 	torrentTag    = "TORRENT"
 	bypassIPs     = map[string]bool{"127.0.0.1": true, "::1": true}
 	enableNetstat = true
-	enableSSHBan  = true
+	enableSSHBan  = false
 	enableFinWait = true
 	sshBanThresh  = 5
 	finWaitThresh = 30
@@ -954,6 +954,8 @@ func main() {
 			}
 		case "--no-netstat":
 			enableNetstat = false
+		case "--ssh-ban":
+			enableSSHBan = true
 		case "--no-ssh-ban":
 			enableSSHBan = false
 		case "--no-finwait-ban":
