@@ -71,7 +71,8 @@ ok "Установлен: ${BINARY}"
 info "Создание директории состояния..."
 mkdir -p /var/lib/torrent-blocker
 chmod 750 /var/lib/torrent-blocker
-ok "/var/lib/torrent-blocker создан"
+rm -f /var/lib/torrent-blocker/blocked.json
+ok "/var/lib/torrent-blocker создан (старое состояние очищено)"
 
 info "Запись systemd unit-файла..."
 cat > "${SERVICE_FILE}" << EOF
