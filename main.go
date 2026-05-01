@@ -773,6 +773,10 @@ func applyDPI() int {
 		exec.Command(ipt, "-A", "CATCH_TRACKER", "-j", "DROP").Run()
 		exec.Command(ipt, "-A", "CATCH_PEER", "-j", "SET", "--add-set", "auto_peers"+sfx, "dst").Run()
 		exec.Command(ipt, "-A", "CATCH_PEER", "-j", "DROP").Run()
+
+		exec.Command(ipt, "-A", dpiChain, "-i", "lo", "-j", "RETURN").Run()
+		exec.Command(ipt, "-A", dpiChain, "-o", "lo", "-j", "RETURN").Run()
+		exec.Command(ipt, "-A", dpiChain, "-m", "conntrack", "--ctstate", "ESTABLISHED,RELATED", "-j", "RETURN").Run()
 	}
 
 	count := 0
