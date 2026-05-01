@@ -17,7 +17,7 @@ ssh.txt.example  — пример файла серверов
 
 ```bash
 go build -o main main.go
-./main --log /var/log/remnanode/access.log --tag TORRENT --no-ssh-ban
+./main --log /var/log/remnanode/access.log --tag TORRENT
 ```
 
 Параметры:
@@ -29,8 +29,6 @@ go build -o main main.go
 | `--ban-duration <мин>` | Длительность бана в минутах (default: 60) |
 | `--bypass <ip1,ip2>` | IP которые не блокировать |
 | `--no-netstat` | Отключить netstat-мониторинг |
-| `--no-ssh-ban` | Не блокировать по SSH-брутфорсу |
-| `--ssh-thresh <n>` | Порог SSH-попыток для бана (default: 5) |
 | `--finwait-thresh <n>` | Порог FIN_WAIT-соединений (default: 8) |
 
 Команды:

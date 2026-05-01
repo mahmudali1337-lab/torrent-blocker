@@ -36,9 +36,7 @@ var (
 	torrentTag    = "TORRENT"
 	bypassIPs     = map[string]bool{"127.0.0.1": true, "::1": true}
 	enableNetstat = true
-	enableSSHBan  = false
 	enableFinWait = true
-	sshBanThresh  = 5
 	finWaitThresh = 30
 	connThresh    = 300
 	sendQThresh   = 10
@@ -52,11 +50,6 @@ var (
 var (
 	peerMu  sync.Mutex
 	peerIPs = map[string]*blockInfo{}
-)
-
-var (
-	sshHitMu sync.Mutex
-	sshHits  = map[string]int{}
 )
 
 var (
@@ -678,9 +671,6 @@ func analyzeConnections(entries []connEntry) {
 				largeSendQ[e.remoteIP]++
 			}
 		}
-		if enableSSHBan && strings.Contains(e.localAddr, ":22") && e.state == "ESTABLISHED" {
-			trackSSHHit(e.remoteIP)
-		}
 	}
 
 	for ip, cnt := range finWaitCount {
@@ -708,22 +698,6 @@ func analyzeConnections(entries []connEntry) {
 	}
 }
 
-func trackSSHHit(ip string) {
-	if bypassIPs[ip] {
-		return
-	}
-	sshHitMu.Lock()
-	sshHits[ip]++
-	hits := sshHits[ip]
-	sshHitMu.Unlock()
-	if hits >= sshBanThresh {
-		sshHitMu.Lock()
-		sshHits[ip] = 0
-		sshHitMu.Unlock()
-		banIP(ip, fmt.Sprintf("ssh_bruteforce(%d)", hits))
-	}
-}
-
 func startNetstatMonitor() {
 	if !enableNetstat {
 		return
@@ -737,7 +711,7 @@ func startNetstatMonitor() {
 			time.Sleep(10 * time.Second)
 		}
 	}()
-	log.Printf("netstat monitor started (finwait_thresh=%d, ssh_thresh=%d)", finWaitThresh, sshBanThresh)
+	log.Printf("netstat monitor started (finwait_thresh=%d)", finWaitThresh)
 }
 
 func applyPortBlock() int {
@@ -954,19 +928,8 @@ func main() {
 			}
 		case "--no-netstat":
 			enableNetstat = false
-		case "--ssh-ban":
-			enableSSHBan = true
-		case "--no-ssh-ban":
-			enableSSHBan = false
 		case "--no-finwait-ban":
 			enableFinWait = false
-		case "--ssh-thresh":
-			if i+1 < len(os.Args) {
-				if n, err := strconv.Atoi(os.Args[i+1]); err == nil {
-					sshBanThresh = n
-				}
-				i++
-			}
 		case "--finwait-thresh":
 			if i+1 < len(os.Args) {
 				if n, err := strconv.Atoi(os.Args[i+1]); err == nil {
@@ -1036,8 +999,8 @@ func main() {
 	if logFile != "" {
 		fmt.Printf("monitoring log: %s (tag=%s)\n", logFile, torrentTag)
 	}
-	fmt.Printf("netstat=%v ssh_ban=%v(thresh=%d) finwait_thresh=%d conn_thresh=%d sendq_thresh=%d\n",
-		enableNetstat, enableSSHBan, sshBanThresh, finWaitThresh, connThresh, sendQThresh)
+	fmt.Printf("netstat=%v finwait_thresh=%d conn_thresh=%d sendq_thresh=%d\n",
+		enableNetstat, finWaitThresh, connThresh, sendQThresh)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)

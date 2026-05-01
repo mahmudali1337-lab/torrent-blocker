@@ -19,7 +19,7 @@ const (
 	remoteBin   = "/usr/local/bin/torrent-blocker"
 	serviceName = "torrent-blocker"
 	serviceFile = "/etc/systemd/system/torrent-blocker.service"
-	startCmd    = "/usr/local/bin/torrent-blocker --log /var/log/remnanode/access.log --tag TORRENT --no-ssh-ban"
+	startCmd    = "/usr/local/bin/torrent-blocker --log /var/log/remnanode/access.log --tag TORRENT"
 )
 
 var serviceUnit = `[Unit]
