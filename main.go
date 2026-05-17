@@ -1,4 +1,4 @@
-﻿package main
+package main
 
 import (
 	"bufio"
@@ -40,6 +40,14 @@ var (
 	finWaitThresh = 30
 	connThresh    = 300
 	sendQThresh   = 10
+	vpnPorts      = map[string]bool{
+		"1194":  true,
+		"51820": true,
+		"500":   true,
+		"4500":  true,
+		"443":   true,
+		"80":    true,
+	}
 )
 
 var (
@@ -126,11 +134,15 @@ var signatures = []signature{
 	{proto: "tcp", dport: 53, pattern: "dht.transmissionbt.com", action: "DROP"},
 }
 
-var torrentPorts = []string{
-	"6881:6999", "6969", "2710", "1337",
-	"4662", "4661", "4672", "4665", "6880",
-	"411", "412", "1214", "4242", "51413",
+var trackerPorts = []string{
+	"6969", "2710", "1337",
+	"4662", "4661", "4672", "4665",
+	"411", "412", "1214", "4242",
 	"8999", "3659",
+}
+
+var clientPorts = []string{
+	"6881:6999", "6880", "51413",
 }
 
 var torrentDestDomains = []string{
@@ -225,7 +237,10 @@ func cleanupDPI() {
 			exec.Command(ipt, "-X", chain).Run()
 		}
 		for _, proto := range []string{"tcp", "udp"} {
-			for _, port := range torrentPorts {
+			for _, port := range trackerPorts {
+				if vpnPorts[port] {
+					continue
+				}
 				for _, chain := range dpiHooks {
 					dir := "--dport"
 					if chain == "INPUT" {
@@ -233,6 +248,14 @@ func cleanupDPI() {
 					}
 					exec.Command(ipt, "-D", chain, "-p", proto, dir, port, "-j", "DROP").Run()
 				}
+			}
+			for _, port := range clientPorts {
+				if vpnPorts[port] {
+					continue
+				}
+				exec.Command(ipt, "-D", "FORWARD", "-p", proto, "--dport", port, "-j", "DROP").Run()
+				exec.Command(ipt, "-D", "FORWARD", "-p", proto, "--sport", port, "-j", "DROP").Run()
+				exec.Command(ipt, "-D", "INPUT", "-p", proto, "--sport", port, "-j", "DROP").Run()
 			}
 		}
 	}
@@ -718,7 +741,10 @@ func applyPortBlock() int {
 	count := 0
 	for _, ipt := range []string{"iptables", "ip6tables"} {
 		for _, proto := range []string{"tcp", "udp"} {
-			for _, port := range torrentPorts {
+			for _, port := range trackerPorts {
+				if vpnPorts[port] {
+					continue
+				}
 				for _, chain := range dpiHooks {
 					dir := "--dport"
 					if chain == "INPUT" {
@@ -727,6 +753,20 @@ func applyPortBlock() int {
 					if exec.Command(ipt, "-A", chain, "-p", proto, dir, port, "-j", "DROP").Run() == nil {
 						count++
 					}
+				}
+			}
+			for _, port := range clientPorts {
+				if vpnPorts[port] {
+					continue
+				}
+				if exec.Command(ipt, "-A", "FORWARD", "-p", proto, "--dport", port, "-j", "DROP").Run() == nil {
+					count++
+				}
+				if exec.Command(ipt, "-A", "FORWARD", "-p", proto, "--sport", port, "-j", "DROP").Run() == nil {
+					count++
+				}
+				if exec.Command(ipt, "-A", "INPUT", "-p", proto, "--sport", port, "-j", "DROP").Run() == nil {
+					count++
 				}
 			}
 		}
@@ -751,6 +791,12 @@ func applyDPI() int {
 		exec.Command(ipt, "-A", dpiChain, "-i", "lo", "-j", "RETURN").Run()
 		exec.Command(ipt, "-A", dpiChain, "-o", "lo", "-j", "RETURN").Run()
 		exec.Command(ipt, "-A", dpiChain, "-m", "conntrack", "--ctstate", "ESTABLISHED,RELATED", "-j", "RETURN").Run()
+		for port := range vpnPorts {
+			for _, proto := range []string{"tcp", "udp"} {
+				exec.Command(ipt, "-A", dpiChain, "-p", proto, "--dport", port, "-j", "RETURN").Run()
+				exec.Command(ipt, "-A", dpiChain, "-p", proto, "--sport", port, "-j", "RETURN").Run()
+			}
+		}
 	}
 
 	count := 0
@@ -764,7 +810,7 @@ func applyDPI() int {
 			if sig.dport > 0 {
 				args = append(args, "--dport", strconv.Itoa(sig.dport))
 			}
-			args = append(args, "-m", "string", "--algo", "bm", "--to", "512")
+			args = append(args, "-m", "string", "--algo", "bm", "--to", "1500")
 			if sig.hex != "" {
 				args = append(args, "--hex-string", sig.hex)
 			} else {
@@ -923,6 +969,16 @@ func main() {
 			if i+1 < len(os.Args) {
 				for _, ip := range strings.Split(os.Args[i+1], ",") {
 					bypassIPs[strings.TrimSpace(ip)] = true
+				}
+				i++
+			}
+		case "--vpn-port":
+			if i+1 < len(os.Args) {
+				for _, p := range strings.Split(os.Args[i+1], ",") {
+					p = strings.TrimSpace(p)
+					if p != "" {
+						vpnPorts[p] = true
+					}
 				}
 				i++
 			}
